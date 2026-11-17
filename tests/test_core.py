@@ -85,3 +85,37 @@ def test_http_service_roundtrip():
 def test_null_llm_echoes():
     assert NullLLM().complete("sys", "user text") == "user text"
     assert NullSTT().transcribe(b"").text == "this is a null transcription"
+
+
+def test_cleanup_falls_back_when_llm_backend_raises():
+    class ExplodingLLM:
+        name = "exploding"
+
+        def complete(self, system: str, user: str) -> str:
+            raise ConnectionError("ollama down")
+
+    cleaner = IntentCleaner(ExplodingLLM())
+    result = cleaner.clean("turn on the lights")
+    assert result.cleaned == "turn on the lights"
+    assert result.notes == "cleanup backend error"
+
+
+def test_cleanup_falls_back_on_non_object_json():
+    cleaner = IntentCleaner(ScriptedLLM('["a", "list"]'))
+    result = cleaner.clean("hello world")
+    assert result.cleaned == "hello world"
+    assert "parse failed" in result.notes
+
+
+def test_transcribe_file_accepts_bytes_and_path(tmp_path):
+    import numpy as np
+    import soundfile as sf
+
+    from oddbeaker_stt.core import transcribe_file
+
+    path = tmp_path / "clip.wav"
+    sf.write(path, np.zeros(1600, dtype=np.float32), 16000, format="WAV")
+    settings = Settings(stt_backend="null", llm_backend="null")
+    by_path = transcribe_file(str(path), settings)
+    by_bytes = transcribe_file(path.read_bytes(), settings)
+    assert by_path.verbatim == by_bytes.verbatim == "this is a null transcription"

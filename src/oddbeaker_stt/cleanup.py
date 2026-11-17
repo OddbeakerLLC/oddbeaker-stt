@@ -73,9 +73,15 @@ class IntentCleaner:
     def clean(self, verbatim: str) -> CleanupResult:
         if not verbatim.strip():
             return CleanupResult(cleaned="")
-        reply = self.llm.complete(SYSTEM_PROMPT, verbatim)
+        try:
+            reply = self.llm.complete(SYSTEM_PROMPT, verbatim)
+        except Exception:  # noqa: BLE001 - backend/network errors must not fail the pipeline
+            return CleanupResult(cleaned=verbatim, notes="cleanup backend error",
+                                 raw_reply="")
         try:
             data = _extract_json(reply)
+            if not isinstance(data, dict):
+                raise ValueError("cleanup reply is not a JSON object")
             cleaned = str(data.get("cleaned", "")).strip()
             corrections = [
                 Correction(said=str(c.get("said", "")), meant=str(c.get("meant", "")))

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "oddbeaker-stt"
-version = "0.1.0"
+version = "0.2.0"
 description = "Intent-aware speech-to-text: verbatim transcription plus an LLM cleanup pass that outputs what the speaker meant"
 readme = "README.md"
 requires-python = ">=3.10"

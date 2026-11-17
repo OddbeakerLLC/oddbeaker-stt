@@ -8,10 +8,14 @@ lightweight for embedders that bring their own backend.
 from __future__ import annotations
 
 import io
+import threading
 from dataclasses import dataclass
 from typing import Protocol
 
 import numpy as np
+
+_stt_cache: dict[tuple, STTBackend] = {}
+_stt_cache_lock = threading.Lock()
 
 
 @dataclass
@@ -64,7 +68,24 @@ class FasterWhisperSTT:
 
 
 def load_stt(settings) -> STTBackend:
-    """Build the configured STT backend."""
+    """Build the configured STT backend.
+
+    Backends are cached per unique configuration so long-lived hosts (the
+    HTTP service) load the whisper model once, not per request. Callers that
+    need a fresh instance can build the backend classes directly.
+    """
+    key = (settings.stt_backend, settings.stt_model, settings.stt_device,
+           settings.stt_compute_type, settings.stt_language)
+    with _stt_cache_lock:
+        cached = _stt_cache.get(key)
+        if cached is not None:
+            return cached
+        backend = _build_stt(settings)
+        _stt_cache[key] = backend
+        return backend
+
+
+def _build_stt(settings) -> STTBackend:
     kind = settings.stt_backend
     if kind == "null":
         return NullSTT()
@@ -82,7 +103,10 @@ def decode_audio_file(data: bytes, target_rate: int = 16000) -> bytes:
     """Decode any soundfile-supported audio file to PCM16 mono @ target_rate."""
     import soundfile as sf
 
-    audio, rate = sf.read(io.BytesIO(data), dtype="float32", always_2d=True)
+    try:
+        audio, rate = sf.read(io.BytesIO(data), dtype="float32", always_2d=True)
+    except Exception as exc:  # noqa: BLE001 - surface a clear decode error
+        raise ValueError(f"unsupported or corrupt audio data: {exc}") from exc
     audio = audio.mean(axis=1)  # downmix to mono
     if rate != target_rate:
         # simple linear resample; good enough for speech prototypes

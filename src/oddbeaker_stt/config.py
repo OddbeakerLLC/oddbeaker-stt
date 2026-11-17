@@ -40,6 +40,11 @@ class Settings:
     # --- HTTP service ------------------------------------------------------
     host: str = field(default_factory=lambda: _env("ODDBEAKER_STT_HOST", "127.0.0.1"))
     port: int = int(_env("ODDBEAKER_STT_PORT", "9202"))
+    # Reject uploads larger than this (MB) with a 413.
+    max_upload_mb: float = float(_env("ODDBEAKER_STT_MAX_UPLOAD_MB", "25"))
+    # HTTP session (streaming) store: idle TTL and cap.
+    session_ttl_seconds: float = float(_env("ODDBEAKER_STT_SESSION_TTL", "3600"))
+    session_max: int = int(_env("ODDBEAKER_STT_SESSION_MAX", "100"))
 
     def with_overrides(self, **overrides: Any) -> "Settings":
         """Return a copy with the given fields replaced (None values ignored)."""
