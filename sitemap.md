@@ -22,3 +22,6 @@ Intent-aware STT module: verbatim transcription + LLM cleanup pass that outputs 
 - Turn-end detection is energy-based only (no VAD model yet) — noisy environments may need webrtcvad/silero; detector protocol is ready for it.
 - Linear-resample audio decode is approximate; fine for speech.
 - HTTP session store is in-memory (single-process only); fine for the planned single-host deployment.
+
+## Remote
+- `origin`: `ssh://git@github.com/OddbeakerLLC/oddbeaker-stt.git` — **canonical branch: `main`** (GitHub default; master deleted 2026-11-18). Local branch `main` tracks `origin/main`.
