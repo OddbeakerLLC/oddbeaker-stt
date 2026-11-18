@@ -164,6 +164,14 @@ pip install -e .            # library + HTTP service (no STT engine yet)
 pip install -e ".[stt]"     # + faster-whisper (the default STT backend)
 ```
 
+`python-multipart` is a **hard runtime dependency** (not optional): the
+`POST /transcribe` endpoint consumes multipart uploads, so it is installed
+automatically with the base package.
+
+**Canonical branch is `main`.** The old `master` branch was deleted
+(2026-11-18); clone the default branch or `git clone --branch main`. Any doc
+or script still referencing `master` is stale.
+
 ## Configuration (environment variables)
 
 | Variable | Default | Meaning |

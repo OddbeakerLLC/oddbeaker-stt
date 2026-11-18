@@ -1,5 +1,5 @@
 # oddbeaker-stt — Sitemap (local only; gitignored)
-_Last updated: 2026-11-17_
+_Last updated: 2026-11-18_
 
 ## Overview
 Intent-aware STT module: verbatim transcription + LLM cleanup pass that outputs what the speaker meant. Designed for embedding in BizAgent and any third-party app. **The FastAPI HTTP service (127.0.0.1:9202) is the canonical integration surface** (locked decision); the Python library import path is secondary.
@@ -17,6 +17,7 @@ Intent-aware STT module: verbatim transcription + LLM cleanup pass that outputs 
 
 ## Active Work
 - v1 feature-complete (2026-11-17): API contract finalized (verbatim + cleaned + corrections[{said, meant}]; timestamps deferred, shape left open for span offsets), silence-window-only turn detection with pluggable detector, streaming sessions over HTTP, hardened error paths, 29 tests green, real-backend e2e verified (TTS speech → whisper → Ollama, one-shot + session).
+- 2026-11-18 maintenance: `python-multipart>=0.0.9` is now a hard runtime dependency (required by `POST /transcribe` multipart uploads; commit 60dc095). Canonical branch is `main`; `master` deleted (merge 355e10c). README documents both.
 
 ## Known Issues
 - Turn-end detection is energy-based only (no VAD model yet) — noisy environments may need webrtcvad/silero; detector protocol is ready for it.
