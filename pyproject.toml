@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "oddbeaker-stt"
+version = "0.2.0"
+description = "Intent-aware speech-to-text: verbatim transcription plus an LLM cleanup pass that outputs what the speaker meant"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+authors = [{ name = "Oddbeaker LLC" }]
+keywords = ["stt", "speech", "whisper", "intent", "llm", "transcription"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: Multimedia :: Sound/Audio :: Speech",
+    "Framework :: FastAPI",
+]
+dependencies = [
+    "fastapi>=0.110",
+    "uvicorn[standard]>=0.27",
+    "pydantic>=2.0",
+    "numpy>=1.24",
+    "soundfile>=0.12",
+    "httpx>=0.27",
+    # faster-whisper is heavy; install via [stt] (see README)
+]
+
+[project.optional-dependencies]
+stt = [
+    "faster-whisper>=1.0",
+]
+dev = [
+    "pytest>=7.0",
+]
+
+[project.scripts]
+oddbeaker-stt = "oddbeaker_stt.service:main"
+ob-stt = "oddbeaker_stt.service:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
