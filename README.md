@@ -20,12 +20,8 @@ mic / file ──► STT backend ──► verbatim transcript ──► LLM cle
 external consumers talk HTTP; the Python library import path remains available
 as a secondary surface for Python embedders. Locked v1 decisions:
 
-- **Turn-end detection is silence-window-only** in v1. The detector is a
-  pluggable protocol (`oddbeaker_stt.turn.TurnDetector`), so a real VAD
-  (silero / webrtcvad) can slot in later without API churn.
-- **No word timestamps in v1.** The `corrections: [{said, meant}]` shape is
-  deliberately open so span offsets can be added later without breaking
-  consumers.
+- **Turn-end detection is silence-window-only** in v1. The detector is a pluggable protocol (`oddbeaker_stt.turn.TurnDetector`), so a real VAD (silero / webrtcvad) can slot in later without API churn.
+- **No word timestamps in v1.** The `corrections: [{said, meant}]` shape is deliberately open so span offsets can be added later without breaking consumers.
 
 ### Result shape (every endpoint that returns a result)
 
@@ -196,16 +192,10 @@ or script still referencing `master` is stale.
 ## Design notes
 
 - The library layer has **no** FastAPI import; embedders pay only for what they use.
-- `Session` is single-turn by design; the host app owns the mic loop and
-  barge-in policy. `turn_ended()` is a poll, not a callback, so it fits any
-  event loop — and the same logic is exposed over HTTP via `/sessions`.
-- Cleanup never invents content: the system prompt forbids answering or
-  extending the request, and any LLM failure (network, malformed JSON,
-  non-object reply) falls back to verbatim rather than failing the pipeline.
-- Both outputs are first-class, so a host can show the raw transcript for
-  debugging/audit while acting on the cleaned intent.
-- Blocking work (whisper, LLM) runs in the worker threadpool; the event loop
-  stays responsive under concurrent requests.
+- `Session` is single-turn by design; the host app owns the mic loop and barge-in policy. `turn_ended()` is a poll, not a callback, so it fits any event loop — and the same logic is exposed over HTTP via `/sessions`.
+- Cleanup never invents content: the system prompt forbids answering or extending the request, and any LLM failure (network, malformed JSON, non-object reply) falls back to verbatim rather than failing the pipeline.
+- Both outputs are first-class, so a host can show the raw transcript for debugging/audit while acting on the cleaned intent.
+- Blocking work (whisper, LLM) runs in the worker threadpool; the event loop stays responsive under concurrent requests.
 
 ## Status
 
